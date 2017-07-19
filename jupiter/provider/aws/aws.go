@@ -32,10 +32,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"weibo.com/opendcp/jupiter/models"
 	"weibo.com/opendcp/jupiter/provider"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"weibo.com/opendcp/jupiter/conf"
 )
 
 func init() {
-	//provider.RegisterProviderDriver("aws", new)
+	provider.RegisterProviderDriver("aws", new)
 }
 
 type awsProvider struct {
@@ -74,6 +76,15 @@ func (driver awsProvider) ListInternetChargeType() []string {
 }
 
 func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, []error) {
+	id := conf.Config.KeyId
+	secret := conf.Config.KeySecret
+	token := ""
+	credentials := credentials.NewStaticCredentials(id, secret, token)
+	zone := aws.String(input.Zone.ZoneName)
+	config := aws.Config{Credentials: credentials, Region: zone}
+
+	driver.client.Config = config
+
 	runResult, err := driver.client.RunInstances(&ec2.RunInstancesInput{
 		// An Amazon Linux AMI ID for imageId (such as t2.micro instances) in the cn-north-1 region
 		ImageId:      aws.String(input.ImageId),
@@ -154,35 +165,34 @@ func (driver awsProvider) Stop(instanceId string) (bool, error) {
 }
 
 func (driver awsProvider) List(regionId string, pageNumber int, pageSize int) (*models.ListInstancesResponse, error) {
-	//params := &ec2.DescribeInstancesInput{
-	//	DryRun: aws.Bool(false),
-	//	Filters: []*ec2.Filter{
-	//		{
-	//			Name: aws.String("instance-state-code"),
-	//			Values: []*string{
-	//				aws.String("16"),
-	//			},
-	//		},
-	//	},
-	//}
-	//listResult, err := driver.client.DescribeInstances(params)
-	//if err != nil {
-	//	beego.Error(err.Error())
-	//	return nil, err
-	//}
-	//var resp models.ListInstancesResp
-	//respJson, err := json.Marshal(listResult)
-	//if err != nil {
-	//	beego.Error(err.Error())
-	//	return nil, err
-	//}
-	//err = json.Unmarshal(respJson, &resp)
-	//if err != nil {
-	//	beego.Error(err.Error())
-	//	return nil, err
-	//}
-	//beego.Info(resp)
-	//return nil, nil
+	params := &ec2.DescribeInstancesInput{
+		DryRun: aws.Bool(false),
+		Filters: []*ec2.Filter{
+			{
+				Name: aws.String("instance-state-code"),
+				Values: []*string{
+					aws.String("16"),
+				},
+			},
+		},
+	}
+	listResult, err := driver.client.DescribeInstances(params)
+	if err != nil {
+		beego.Error(err.Error())
+		return nil, err
+	}
+	var listInstancesResp models.ListInstancesResponse
+	respJson, err := json.Marshal(listResult)
+	if err != nil {
+		beego.Error(err.Error())
+		return nil, err
+	}
+	err = json.Unmarshal(respJson, &listInstancesResp)
+	if err != nil {
+		beego.Error(err.Error())
+		return nil, err
+	}
+	beego.Info(listInstancesResp)
 	return nil, nil
 }
 
@@ -549,7 +559,9 @@ func new() (provider.ProviderDriver, error) {
 }
 
 func newProvider() (provider.ProviderDriver, error) {
-	client := ec2.New(session.New(&aws.Config{Region: aws.String("cn-north-1")}))
+	sess := session.Must(session.NewSession())
+	client := ec2.New(sess)
+
 	ret := awsProvider{
 		client: client,
 	}
