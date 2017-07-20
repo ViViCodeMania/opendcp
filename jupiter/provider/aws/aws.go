@@ -34,6 +34,7 @@ import (
 	"weibo.com/opendcp/jupiter/provider"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"weibo.com/opendcp/jupiter/conf"
+	"fmt"
 )
 
 func init() {
@@ -79,6 +80,7 @@ func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, [
 	id := conf.Config.KeyId
 	secret := conf.Config.KeySecret
 	var token string = ""
+	fmt.Println(id + " " + secret + " ")
 	credentials := credentials.NewStaticCredentials(id, secret, token)
 	zone := aws.String(input.Zone.ZoneName)
 	config := aws.Config{Credentials: credentials, Region: zone}

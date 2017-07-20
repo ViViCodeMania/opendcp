@@ -196,6 +196,8 @@ func (clusterController *ClusterController) ExpandInstances() {
 		return
 	}
 	theCluster, err := cluster.GetCluster(clusterId)
+
+	fmt.Println("theCluster: ", theCluster)
 	if err != nil {
 		beego.Error("Get cluster error:", err)
 		clusterController.RespServiceError(err)
@@ -216,6 +218,8 @@ func (clusterController *ClusterController) ExpandInstances() {
 		clusterController.RespJsonWithStatus()
 		return
 	}
+
+	fmt.Println("expandNumber:", expandNumber, " correlationId:", correlationId)
 	instanceIds, err := cluster.Expand(theCluster, expandNumber, correlationId)
 	if len(instanceIds) == 0 {
 		beego.Error("expand instances failed:", err)
