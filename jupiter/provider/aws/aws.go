@@ -78,7 +78,7 @@ func (driver awsProvider) ListInternetChargeType() []string {
 func (driver awsProvider) Create(input *models.Cluster, number int) ([]string, []error) {
 	id := conf.Config.KeyId
 	secret := conf.Config.KeySecret
-	token := ""
+	var token string = nil
 	credentials := credentials.NewStaticCredentials(id, secret, token)
 	zone := aws.String(input.Zone.ZoneName)
 	config := aws.Config{Credentials: credentials, Region: zone}
