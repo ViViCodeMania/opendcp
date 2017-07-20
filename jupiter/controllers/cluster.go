@@ -179,6 +179,10 @@ func (clusterController *ClusterController) ExpandInstances() {
 	}
 	resp := ApiResponse{}
 	clusterId, err := clusterController.GetInt64(":clusterId")
+
+	//打印id
+	beego.Info("clusterId is ", clusterId)
+
 	if err != nil {
 		beego.Error("Need to pass vaild cluster id: ", err)
 		clusterController.RespInputError()
@@ -197,7 +201,10 @@ func (clusterController *ClusterController) ExpandInstances() {
 	}
 	theCluster, err := cluster.GetCluster(clusterId)
 
-	fmt.Println("theCluster: ", theCluster)
+	// 是否成功getCluster
+	beego.Info("the cluster is", theCluster)
+
+
 	if err != nil {
 		beego.Error("Get cluster error:", err)
 		clusterController.RespServiceError(err)
@@ -219,7 +226,6 @@ func (clusterController *ClusterController) ExpandInstances() {
 		return
 	}
 
-	fmt.Println("expandNumber:", expandNumber, " correlationId:", correlationId)
 	instanceIds, err := cluster.Expand(theCluster, expandNumber, correlationId)
 	if len(instanceIds) == 0 {
 		beego.Error("expand instances failed:", err)

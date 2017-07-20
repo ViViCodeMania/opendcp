@@ -77,6 +77,10 @@ func Expand(cluster *models.Cluster, num int, correlationId string) ([]string, e
 	if err != nil {
 		return nil, err
 	}
+
+	//打印provider
+	beego.Info("cluster.Provider:", cluster.Provider, "providerDriver:", providerDriver)
+
 	instanceIds, errs := providerDriver.Create(cluster, num)
 	if len(instanceIds) == 0 {
 		return nil, errs[0]
