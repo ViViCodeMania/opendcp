@@ -148,7 +148,7 @@ func (driver awsProvider) Delete(instanceId string) (time.Time, error) {
 	_, err := driver.client.TerminateInstances(params)
 	if err != nil {
 		beego.Error(err.Error())
-		return time.Now(), err
+		return time.Now(), nil
 	}
 	return time.Now(), nil
 }
